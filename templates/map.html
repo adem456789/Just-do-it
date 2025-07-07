@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Live Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>#map { height: 100vh; }</style>
+</head>
+<body>
+<h2>Live Location Map</h2>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([34.0, 0.0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  function loadMarkers() {
+    fetch("/locations")
+      .then(response => response.json())
+      .then(data => {
+        map.eachLayer(layer => {
+          if (layer instanceof L.Marker) map.removeLayer(layer);
+        });
+        for (const name in data) {
+          const { lat, lng } = data[name];
+          L.marker([lat, lng]).addTo(map)
+            .bindPopup(`<b>${name}</b><br>Lat: ${lat}<br>Lng: ${lng}`);
+        }
+      });
+  }
+
+  loadMarkers();
+  setInterval(loadMarkers, 5000);
+</script>
+</body>
+</html>
