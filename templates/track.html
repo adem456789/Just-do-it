@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Send Location</title>
+</head>
+<body>
+  <h2>Share Your Location</h2>
+  <input type="text" id="name" placeholder="Enter your name">
+  <button onclick="startTracking()">do it</button>
+  <p id="status"></p>
+
+  <script>
+    let watchId = null;
+    function startTracking() {
+      const name = document.getElementById("name").value;
+      if (!name) {
+        alert("Please enter your name");
+        return;
+      }
+      if (navigator.geolocation) {
+        watchId = navigator.geolocation.watchPosition(position => {
+          const data = {
+            name: name,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
+          fetch("/update_location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          })
+          .then(response => response.json())
+          .then(result => {
+            document.getElementById("status").innerText = result.status;
+          })
+          .catch(error => {
+            console.error("Error:", error);
+          });
+        }, () => {
+          alert("Failed to get location.");
+        });
+      } else {
+        alert("Geolocation not supported.");
+      }
+    }
+  </script>
+</body>
+</html>
